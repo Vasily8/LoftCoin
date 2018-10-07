@@ -20,8 +20,10 @@ public class  WelcomePagerAdapter extends FragmentPagerAdapter {
 
         pages = new ArrayList<>();
         pages.add(new WelcomePage(R.drawable.image_welcome_page_1, R.string.welcome_title_1, R.string.welcome_subtitle_1));
-        pages.add(new WelcomePage(R.drawable.image_welcome_page_1, R.string.welcome_title_2, R.string.welcome_subtitle_2));
-        pages.add(new WelcomePage(R.drawable.image_welcome_page_1, R.string.welcome_title_3, R.string.welcome_subtitle_3));
+        pages.add(new WelcomePage(R.drawable.image_welcome_page_2, R.string.welcome_title_2, R.string.welcome_subtitle_2));
+        pages.add(new WelcomePage(R.drawable.image_welcome_page_3, R.string.welcome_title_3, R.string.welcome_subtitle_3));
+
+
     }
 
     @Override
