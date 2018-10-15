@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import com.vasily.loftcoin.App;
 import com.vasily.loftcoin.R;
 import com.vasily.loftcoin.data.api.Api;
+import com.vasily.loftcoin.data.db.Database;
+import com.vasily.loftcoin.data.db.model.CoinEntityMapper;
 import com.vasily.loftcoin.data.prefs.Prefs;
 import com.vasily.loftcoin.screens.main.MainActivity;
 
@@ -46,8 +48,10 @@ public class StartActivity extends AppCompatActivity implements StartView {
 
         Api api = ((App) getApplication()).getApi();
         Prefs prefs = ((App) getApplication()).getPrefs();
+        Database database = ((App) getApplication()).getDatabase();
+        CoinEntityMapper mapper = new CoinEntityMapper();
 
-        presenter = new StartPresenterImpl(api, prefs);
+        presenter = new StartPresenterImpl(api, prefs, database, mapper);
         presenter.attachView(this);
 
 
