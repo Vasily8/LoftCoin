@@ -1,11 +1,9 @@
 package com.vasily.loftcoin.screens.start;
 
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.vasily.loftcoin.data.api.Api;
 import com.vasily.loftcoin.data.api.model.Coin;
-import com.vasily.loftcoin.data.api.model.RateResponse;
 import com.vasily.loftcoin.data.db.Database;
 import com.vasily.loftcoin.data.db.model.CoinEntity;
 import com.vasily.loftcoin.data.db.model.CoinEntityMapper;
@@ -13,9 +11,10 @@ import com.vasily.loftcoin.data.prefs.Prefs;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class StartPresenterImpl implements StartPresenter {
 
@@ -25,6 +24,8 @@ public class StartPresenterImpl implements StartPresenter {
     private Prefs prefs;
     private Database database;
     private CoinEntityMapper mapper;
+
+    private CompositeDisposable disposables = new CompositeDisposable();
 
     @Nullable
     private StartView view;
@@ -44,6 +45,7 @@ public class StartPresenterImpl implements StartPresenter {
 
     @Override
     public void detachView() {
+        disposables.dispose();
         this.view = null;
     }
 
@@ -51,27 +53,31 @@ public class StartPresenterImpl implements StartPresenter {
     @Override
     public void loadRate() {
 
-        api.ticker("array", prefs.getFiatCurrency().name()).enqueue(new Callback<RateResponse>() {
-            @Override
-            public void onResponse(Call<RateResponse> call, Response<RateResponse> response) {
-                if (response.body() != null) {
-                    List<Coin> coins = response.body().data;
-                    List<CoinEntity> entities = mapper.mapCoins(coins);
+        Disposable disposable = api.ticker("array", prefs.getFiatCurrency().name())
+                .subscribeOn(Schedulers.io())
+                .map(rateResponse -> {
+                    List<Coin> coins = rateResponse.data;
+                    List<CoinEntity> coinEntities = mapper.mapCoins(coins);
 
-                    database.saveCoins(entities);
-                }
+                    database.saveCoins(coinEntities);
 
+                    return coinEntities;
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        coinEntities -> {
+                            if (view != null) {
+                                view.navigateToMainScreen();
+                            }
+                        },
 
-                if (view != null) {
-                    view.navigateToMainScreen();
-                }
-            }
+                        throwable -> {
 
-            @Override
-            public void onFailure(Call<RateResponse> call, Throwable t) {
-                Log.e(TAG, "Load rate error", t);
-            }
-        });
+                        }
+                );
+
+        disposables.add(disposable);
+
     }
 
 
