@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LoftCoinOct18</string>
+    <string name="app_name">LoftCoin</string>
 
 
     <string name="currency_amount">%s %s</string>
@@ -24,6 +24,8 @@
     <string name="rate_item_percent_change" translatable="false">%.2f%%</string>
 
     <string name="accounts_screen_title">Кошельки</string>
+
+    <string name="converter_screen_title">Converter</string>
 
     <string name="currencies_bottom_sheet_title">Выбор валюты</string>
     <string name="currencies_bottom_sheet_currency_name">%s | %s</string>

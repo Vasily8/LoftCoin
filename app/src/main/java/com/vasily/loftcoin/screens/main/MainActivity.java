@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.vasily.loftcoin.R;
+import com.vasily.loftcoin.screens.main.converter.ConverterFragment;
 import com.vasily.loftcoin.screens.main.rate.RateFragment;
 
 import butterknife.BindView;
@@ -50,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
             switch (menuItem.getItemId()) {
-                case R.id.menu_item_accounts: // Checking the item menu identifier
-
+                case R.id.menu_item_accounts:
+//                    showWalletsFragment();
                     break;
 
                 case R.id.menu_item_rate:
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case R.id.menu_item_converter:
-
+                    showConverterFragment();
                     break;
             }
 
@@ -67,9 +68,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
+//    private void showWalletsFragment() {
+//        WalletsFragment fragment = new WalletsFragment();
+//        FragmentManager fm = getSupportFragmentManager();
+//        FragmentTransaction transaction = fm.beginTransaction();
+//        transaction.replace(R.id.fragment_container, fragment);
+//        transaction.commit();
+//    }
+
     private void showRateFragment() {
-        RateFragment fragment = new RateFragment();  // create a new fragment
-        FragmentManager fm = getSupportFragmentManager();  //we get a fragment manager
+        RateFragment fragment = new RateFragment();
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.commit();
+    }
+
+    private void showConverterFragment() {
+        ConverterFragment fragment = new ConverterFragment();
+        FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.commit();
