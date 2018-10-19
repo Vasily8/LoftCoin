@@ -1,8 +1,8 @@
 package com.vasily.loftcoin.screens.main.rate;
 
-
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -20,6 +21,7 @@ import com.vasily.loftcoin.data.api.Api;
 import com.vasily.loftcoin.data.db.Database;
 import com.vasily.loftcoin.data.db.model.CoinEntity;
 import com.vasily.loftcoin.data.db.model.CoinEntityMapper;
+import com.vasily.loftcoin.data.model.Fiat;
 import com.vasily.loftcoin.data.prefs.Prefs;
 
 import java.util.List;
@@ -29,7 +31,9 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 
-public class RateFragment extends Fragment implements RateView{
+public class RateFragment extends Fragment implements RateView, Toolbar.OnMenuItemClickListener, CurrencyDialog.CurrencyDialogListener{
+
+    private static final String LAYOUT_MANAGER_STATE = "layout_manager_state";
 
     @BindView(R.id.rate_recycler)
     RecyclerView recycler;
@@ -43,10 +47,15 @@ public class RateFragment extends Fragment implements RateView{
     @BindView(R.id.rate_content)
     ViewGroup content;
 
+    @BindView(R.id.progress)
+    ViewGroup progress;
+
 
     private RatePresenter presenter;
     private RateAdapter adapter;
     private Unbinder unbinder;
+
+    private Parcelable layoutMangerState;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,6 +90,8 @@ public class RateFragment extends Fragment implements RateView{
         unbinder = ButterKnife.bind(this, view);
 
         toolbar.setTitle(R.string.rate_screen_title);
+        toolbar.inflateMenu(R.menu.menu_rate);
+        toolbar.setOnMenuItemClickListener(this);
 
         recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         recycler.setHasFixedSize(true);
@@ -92,6 +103,17 @@ public class RateFragment extends Fragment implements RateView{
                 presenter.onRefresh();
             }
         });
+
+        if (savedInstanceState != null) {
+            layoutMangerState = savedInstanceState.getParcelable(LAYOUT_MANAGER_STATE);
+        }
+
+        Fragment fragment = getFragmentManager().findFragmentByTag(CurrencyDialog.TAG);
+
+        if (fragment != null) {
+            ((CurrencyDialog) fragment).setListener(this);
+        }
+
 
 
         presenter.attachView(this);
@@ -105,10 +127,32 @@ public class RateFragment extends Fragment implements RateView{
         super.onDestroyView();
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putParcelable(LAYOUT_MANAGER_STATE, recycler.getLayoutManager().onSaveInstanceState());
+        super.onSaveInstanceState(outState);
+    }
+
 
     @Override
     public void setCoins(List<CoinEntity> coins) {
         adapter.setCoins(coins);
+
+        if (layoutMangerState != null) {
+            recycler.getLayoutManager().onRestoreInstanceState(layoutMangerState);
+            layoutMangerState = null;
+        }
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.menu_item_currency:
+                presenter.onMenuItemCurrencyClick();
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -118,6 +162,23 @@ public class RateFragment extends Fragment implements RateView{
 
     @Override
     public void showCurrencyDialog() {
+        CurrencyDialog dialog = new CurrencyDialog();
+        dialog.setListener(this);
+        dialog.show(getFragmentManager(), CurrencyDialog.TAG); // call show method and pass to the FragmentManager
+    }  //show CurrencyDialog
 
+    @Override
+    public void onCurrencySelected(Fiat currency) {
+        presenter.onFiatCurrencySelected(currency);
+    } // report to the presenter what currency came out
+
+    @Override
+    public void showProgress() {
+        progress.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideProgress() {
+        progress.setVisibility(View.GONE);
     }
 }
