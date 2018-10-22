@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import com.vasily.loftcoin.R;
 import com.vasily.loftcoin.screens.main.converter.ConverterFragment;
 import com.vasily.loftcoin.screens.main.rate.RateFragment;
+import com.vasily.loftcoin.screens.main.wallets.WalletsFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
             switch (menuItem.getItemId()) {
                 case R.id.menu_item_accounts:
-//                    showWalletsFragment();
+                    showWalletsFragment();
                     break;
 
                 case R.id.menu_item_rate:
@@ -69,13 +70,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
-//    private void showWalletsFragment() {
-//        WalletsFragment fragment = new WalletsFragment();
-//        FragmentManager fm = getSupportFragmentManager();
-//        FragmentTransaction transaction = fm.beginTransaction();
-//        transaction.replace(R.id.fragment_container, fragment);
-//        transaction.commit();
-//    }
+    private void showWalletsFragment() {
+        WalletsFragment fragment = new WalletsFragment();
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.commit();
+    }
 
     private void showRateFragment() {
         RateFragment fragment = new RateFragment();
