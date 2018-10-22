@@ -38,6 +38,7 @@ ext {
     rx_java_ver = "2.2.2"  // java rx version
     rx_android_ver = "2.1.0"
     rx_binding_ver = "2.1.1"
+    lifecycle_ver = "1.1.1"
 
 }
 
@@ -56,7 +57,8 @@ dependencies {
     // Retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofit_ver"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_ver"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_ver" //Server Answers in Observable
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_ver"
+    //Server Answers in Observable
 
     // OkHttp
     implementation "com.squareup.okhttp3:okhttp:$okhttp_ver"
@@ -71,6 +73,9 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rx_java_ver"
     implementation "io.reactivex.rxjava2:rxandroid:$rx_android_ver"
     implementation "com.jakewharton.rxbinding2:rxbinding:$rx_binding_ver"
+
+    // ViewModel and LiveData
+    implementation "android.arch.lifecycle:extensions:$lifecycle_ver"
 
 
     testImplementation 'junit:junit:4.12'
