@@ -2,6 +2,8 @@ package com.vasily.loftcoin.data.db.room;
 
 import com.vasily.loftcoin.data.db.Database;
 import com.vasily.loftcoin.data.db.model.CoinEntity;
+import com.vasily.loftcoin.data.db.model.Transaction;
+import com.vasily.loftcoin.data.db.model.TransactionModel;
 import com.vasily.loftcoin.data.db.model.Wallet;
 import com.vasily.loftcoin.data.db.model.WalletModel;
 
@@ -40,5 +42,15 @@ public class DatabaseImplRoom implements Database {
     @Override
     public void saveWallet(Wallet wallet) {
         database.walletDao().saveWallet(wallet);
+    }
+
+    @Override
+    public void saveTransaction(List<Transaction> transactions) {
+        database.walletDao().saveTransactions(transactions);
+    }
+
+    @Override
+    public Flowable<List<TransactionModel>> getTransactions(String walletId) {
+        return database.walletDao().getTransactions(walletId);
     }
 }

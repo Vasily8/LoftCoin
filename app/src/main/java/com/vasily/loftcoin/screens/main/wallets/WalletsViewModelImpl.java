@@ -8,10 +8,13 @@ import android.support.annotation.NonNull;
 import com.vasily.loftcoin.App;
 import com.vasily.loftcoin.data.db.Database;
 import com.vasily.loftcoin.data.db.model.CoinEntity;
+import com.vasily.loftcoin.data.db.model.Transaction;
+import com.vasily.loftcoin.data.db.model.TransactionModel;
 import com.vasily.loftcoin.data.db.model.Wallet;
 import com.vasily.loftcoin.data.db.model.WalletModel;
 import com.vasily.loftcoin.utils.SingleLiveEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -27,6 +30,7 @@ public class WalletsViewModelImpl extends WalletsViewModel {
     private static final String TAG = "WalletsViewModelImpl";
 
     private MutableLiveData<List<WalletModel>> walletsItems = new MutableLiveData<>();
+    private MutableLiveData<List<TransactionModel>> transactionsItems = new MutableLiveData<>();
     private MutableLiveData<Boolean> walletsVisible = new MutableLiveData<>();
     private MutableLiveData<Boolean> newWalletVisible = new MutableLiveData<>();
     private SingleLiveEvent<Object> selectCurrency = new SingleLiveEvent<>();
@@ -56,6 +60,12 @@ public class WalletsViewModelImpl extends WalletsViewModel {
         return walletsItems;
     }
 
+    @Override
+    public LiveData<List<TransactionModel>> transactions() {
+        return transactionsItems;
+    }
+
+
     public WalletsViewModelImpl(@NonNull Application application) {
         super(application);
 
@@ -72,12 +82,18 @@ public class WalletsViewModelImpl extends WalletsViewModel {
         Disposable disposable = database.getWallets()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(wallets -> {
-                    if (wallets.isEmpty()) { // if our wallets are empty
+                    if (wallets.isEmpty()) {
                         walletsVisible.setValue(false);
                         newWalletVisible.setValue(true);
-                    } else { // not empty
+                    } else {
                         walletsVisible.setValue(true);
                         newWalletVisible.setValue(false);
+
+                        if (walletsItems.getValue() == null || walletsItems.getValue().isEmpty()) {
+                            WalletModel model = wallets.get(0);
+                            String walletId = model.wallet.walletId;
+                            getTransaction(walletId);
+                        }
 
                         walletsItems.setValue(wallets);
                     }
@@ -85,6 +101,17 @@ public class WalletsViewModelImpl extends WalletsViewModel {
 
         disposables.add(disposable);
     }
+
+    private void getTransaction(String walletId) {
+        Disposable disposable = database.getTransactions(walletId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        transactions -> transactionsItems.setValue(transactions)
+                );
+
+        disposables.add(disposable);
+    }
+
 
     @Override
     public void onNewWalletClick() {
@@ -94,9 +121,11 @@ public class WalletsViewModelImpl extends WalletsViewModel {
     @Override
     public void onCurrencySelected(CoinEntity coin) {
         Wallet wallet = randomWallet(coin);
+        List<Transaction> transactions = randomTransactions(wallet);
 
         Disposable disposable = Observable.fromCallable(() -> {
             database.saveWallet(wallet);
+            database.saveTransaction(transactions); //Saving to Transaction Database
             return new Object();
         })
                 .subscribeOn(Schedulers.io())
@@ -106,8 +135,39 @@ public class WalletsViewModelImpl extends WalletsViewModel {
 
     }
 
+    private List<Transaction> randomTransactions(Wallet wallet) {
+        List<Transaction> transactions = new ArrayList<>();
+
+        for (int i = 0; i < 20; i++) {
+            transactions.add(randomTransaction(wallet));
+        }
+
+        return transactions;
+    }
+
+    private Transaction randomTransaction(Wallet wallet) {
+        Random random = new Random();
+
+        long startDate = 1483228800000L;
+        long nowDate = System.currentTimeMillis();
+        long date = startDate + (long) (random.nextDouble() * (nowDate - startDate));
+
+        double amount = 2 * random.nextDouble();
+        boolean amountSign = random.nextBoolean();
+
+
+        return new Transaction(wallet.walletId, wallet.currencyId, amountSign ? amount : -amount, date);
+    }
+
     private Wallet randomWallet(CoinEntity coin) {
         Random random = new Random();
         return new Wallet(UUID.randomUUID().toString(), coin.id, 10 * random.nextDouble());
+    }
+
+
+    @Override
+    public void onWalletChanged(int position) {
+        Wallet wallet = walletsItems.getValue().get(position).wallet;
+        getTransaction(wallet.walletId);
     }
 }
