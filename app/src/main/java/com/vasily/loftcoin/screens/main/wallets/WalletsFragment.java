@@ -1,6 +1,5 @@
 package com.vasily.loftcoin.screens.main.wallets;
 
-
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Point;
@@ -12,6 +11,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +34,8 @@ import butterknife.ButterKnife;
  * A simple {@link Fragment} subclass.
  */
 public class WalletsFragment extends Fragment implements CurrenciesBottomSheetListener {
+
+    private static final String TAG = "WalletsFragment";
 
     private static final String VIEW_PAGER_POS = "view_page_pos";
 
@@ -157,6 +159,11 @@ public class WalletsFragment extends Fragment implements CurrenciesBottomSheetLi
 
         viewModel.selectCurrency().observe(this, o -> {
             showCurrenciesBottomSheet();
+        });
+
+        viewModel.scrollToNewWallet().observe(this, o -> {
+            Log.d(TAG, "scrollToNewWallet");
+            walletsPager.setCurrentItem(walletsPagerAdapter.getCount() - 1, true);
         });
 
     }

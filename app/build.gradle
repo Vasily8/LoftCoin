@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply plugin: 'realm-android' //connected realm plugin
+
 android {
     compileSdkVersion 28
     defaultConfig {
