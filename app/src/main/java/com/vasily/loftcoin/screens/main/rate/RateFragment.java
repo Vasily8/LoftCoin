@@ -70,10 +70,11 @@ public class RateFragment extends Fragment implements RateView, Toolbar.OnMenuIt
 
         Api api = ((App) getActivity().getApplication()).getApi();
         Prefs prefs = ((App) getActivity().getApplication()).getPrefs();
-        Database database = ((App) getActivity().getApplication()).getDatabase();
+        Database mainDatabase = ((App) getActivity().getApplication()).getDatabase();
+        Database workerDatabase = ((App) getActivity().getApplication()).getDatabase();
         CoinEntityMapper mapper = new CoinEntityMapper();
 
-        presenter = new RatePresenterImpl(api, prefs, database, mapper);
+        presenter = new RatePresenterImpl(api, prefs, mainDatabase, workerDatabase, mapper);
 
         adapter = new RateAdapter(prefs);
         adapter.setHasStableIds(true);
@@ -164,13 +165,13 @@ public class RateFragment extends Fragment implements RateView, Toolbar.OnMenuIt
     public void showCurrencyDialog() {
         CurrencyDialog dialog = new CurrencyDialog();
         dialog.setListener(this);
-        dialog.show(getFragmentManager(), CurrencyDialog.TAG); // call show method and pass to the FragmentManager
-    }  //show CurrencyDialog
+        dialog.show(getFragmentManager(), CurrencyDialog.TAG);
+    }
 
     @Override
     public void onCurrencySelected(Fiat currency) {
         presenter.onFiatCurrencySelected(currency);
-    } // report to the presenter what currency came out
+    }
 
     @Override
     public void showProgress() {

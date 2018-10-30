@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply plugin: 'realm-android' //connected realm plugin
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -10,11 +12,6 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
-            }
-        }
     }
     buildTypes {
         release {
@@ -37,7 +34,7 @@ ext {
     room_ver = "1.1.1"
     rx_java_ver = "2.2.2"  // java rx version
     rx_android_ver = "2.1.0"
-    rx_binding_ver = "2.1.1"
+    rx_binding_ver = "2.2.0"
     lifecycle_ver = "1.1.1"
 
 }

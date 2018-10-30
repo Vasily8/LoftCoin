@@ -1,6 +1,7 @@
 package com.vasily.loftcoin.screens.main.rate;
 
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.vasily.loftcoin.data.api.Api;
 import com.vasily.loftcoin.data.db.Database;
@@ -15,10 +16,12 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RatePresenterImpl implements RatePresenter {
 
+    private static final String TAG = "RatePresenterImpl";
 
     private Api api;
     private Prefs prefs;
-    private Database database;
+    private Database mainDatabase;
+    private Database workerDatabase;
     private CoinEntityMapper mapper;
 
     private CompositeDisposable disposables = new CompositeDisposable();
@@ -27,10 +30,11 @@ public class RatePresenterImpl implements RatePresenter {
     @Nullable
     private RateView view;
 
-    public RatePresenterImpl(Api api, Prefs prefs, Database database, CoinEntityMapper mapper) {
+    public RatePresenterImpl(Api api, Prefs prefs, Database mainDatabase, Database workerDatabase, CoinEntityMapper mapper) {
         this.api = api;
         this.prefs = prefs;
-        this.database = database;
+        this.mainDatabase = mainDatabase;
+        this.workerDatabase = workerDatabase;
         this.mapper = mapper;
     }
 
@@ -38,18 +42,19 @@ public class RatePresenterImpl implements RatePresenter {
     @Override
     public void attachView(RateView view) {
         this.view = view;
+        mainDatabase.open();
     }
 
     @Override
     public void detachView() {
+        mainDatabase.close();
         disposables.dispose();
         this.view = null;
     }
 
     @Override
     public void getRate() {
-        Disposable disposable = database.getCoins()
-                .observeOn(AndroidSchedulers.mainThread())
+        Disposable disposable = mainDatabase.getCoins()
                 .subscribe(
                         coinEntities -> {
                             if (view != null) {
@@ -77,7 +82,9 @@ public class RatePresenterImpl implements RatePresenter {
                 .subscribeOn(Schedulers.io())
                 .map(rateResponse -> mapper.mapCoins(rateResponse.data))
                 .map(coinEntities -> {
-                    database.saveCoins(coinEntities);
+                    workerDatabase.open();
+                    workerDatabase.saveCoins(coinEntities);
+                    workerDatabase.close();
                     return new Object();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -94,7 +101,7 @@ public class RatePresenterImpl implements RatePresenter {
                         },
 
                         throwable -> {
-
+                            Log.e(TAG, "Failed to load rate", throwable);
                             if (fromRefresh) {
                                 view.setRefreshing(false);
                             } else {
@@ -119,7 +126,7 @@ public class RatePresenterImpl implements RatePresenter {
 
     @Override
     public void onFiatCurrencySelected(Fiat currency) {
-        prefs.setFiatCurrency(currency); // save our currency in prefs
+        prefs.setFiatCurrency(currency);
         loadRate(false);
     }
 }
