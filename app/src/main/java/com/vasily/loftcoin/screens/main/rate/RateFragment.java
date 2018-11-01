@@ -23,6 +23,8 @@ import com.vasily.loftcoin.data.db.model.CoinEntity;
 import com.vasily.loftcoin.data.db.model.CoinEntityMapper;
 import com.vasily.loftcoin.data.model.Fiat;
 import com.vasily.loftcoin.data.prefs.Prefs;
+import com.vasily.loftcoin.job.JobHelper;
+import com.vasily.loftcoin.job.JobHelperImpl;
 
 import java.util.List;
 
@@ -31,7 +33,10 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 
-public class RateFragment extends Fragment implements RateView, Toolbar.OnMenuItemClickListener, CurrencyDialog.CurrencyDialogListener{
+public class RateFragment extends Fragment implements RateView,
+        Toolbar.OnMenuItemClickListener,
+        CurrencyDialog.CurrencyDialogListener,
+        RateAdapter.Listener {
 
     private static final String LAYOUT_MANAGER_STATE = "layout_manager_state";
 
@@ -73,11 +78,13 @@ public class RateFragment extends Fragment implements RateView, Toolbar.OnMenuIt
         Database mainDatabase = ((App) getActivity().getApplication()).getDatabase();
         Database workerDatabase = ((App) getActivity().getApplication()).getDatabase();
         CoinEntityMapper mapper = new CoinEntityMapper();
+        JobHelper jobHelper = new JobHelperImpl(getContext());
 
-        presenter = new RatePresenterImpl(api, prefs, mainDatabase, workerDatabase, mapper);
+        presenter = new RatePresenterImpl(api, prefs, mainDatabase, workerDatabase, mapper, jobHelper);
 
         adapter = new RateAdapter(prefs);
         adapter.setHasStableIds(true);
+        adapter.setListener(this);
     }
 
     @Override
@@ -181,5 +188,10 @@ public class RateFragment extends Fragment implements RateView, Toolbar.OnMenuIt
     @Override
     public void hideProgress() {
         progress.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onRateLongClick(String symbol) {
+        presenter.onRateLongClick(symbol);
     }
 }
