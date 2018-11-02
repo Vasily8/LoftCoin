@@ -30,6 +30,7 @@ import butterknife.ButterKnife;
 public class RateAdapter extends RecyclerView.Adapter<RateAdapter.RateViewHolder> {
 
     private List<CoinEntity> coins = Collections.emptyList();
+    private Listener listener = null;
 
     private Prefs prefs;
 
@@ -42,6 +43,9 @@ public class RateAdapter extends RecyclerView.Adapter<RateAdapter.RateViewHolder
         notifyDataSetChanged();
     }
 
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
 
     @NonNull
     @Override
@@ -52,7 +56,7 @@ public class RateAdapter extends RecyclerView.Adapter<RateAdapter.RateViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull RateViewHolder holder, int position) {
-        holder.bind(coins.get(position), position);
+        holder.bind(coins.get(position), position, listener);
     }
 
     @Override
@@ -107,12 +111,13 @@ public class RateAdapter extends RecyclerView.Adapter<RateAdapter.RateViewHolder
         }
 
 
-        void bind(CoinEntity coin, int position) {
+        void bind(CoinEntity coin, int position, Listener listener) {
             bindIcon(coin);
             bindSymbol(coin);
             bindPrice(coin);
             bindPercentage(coin);
             bindBackground(position);
+            bindListener(coin, listener);
         }
 
         private void bindBackground(int position) {
@@ -171,5 +176,18 @@ public class RateAdapter extends RecyclerView.Adapter<RateAdapter.RateViewHolder
             }
         }
 
+        private void bindListener(CoinEntity coin, Listener listener) {
+            itemView.setOnLongClickListener(v -> {
+                if (listener != null) {
+                    listener.onRateLongClick(coin.symbol);
+                }
+                return true;
+            });
+        }
+
+    }
+
+    interface Listener {
+        void onRateLongClick(String symbol);
     }
 }
